@@ -2,6 +2,7 @@ package mpi.plugin
 
 import java.nio.file.Paths
 
+import nextflow.executor.ExecutorConfig
 import nextflow.Session
 import nextflow.processor.TaskConfig
 import nextflow.executor.AbstractGridExecutor
@@ -17,6 +18,16 @@ import spock.lang.Specification
  * @author Varun Sreenivasan <varun.sreenivasan@molgen.mpg.de> (Edited from Flux Executor with help from Thomas Kreitler and Donald Buczek)
  */
 class MxqExecutorTest extends Specification {
+
+    def createExecutor(config) {
+        Spy(MxqExecutor) {
+            getConfig() >> config
+        }
+    }
+
+    def createExecutor() {
+        createExecutor(new ExecutorConfig([:]))
+    }
 
     def testParseJob() {
         given:
@@ -46,19 +57,19 @@ class MxqExecutorTest extends Specification {
     }
 
     def testGetCommandLine() {
-        given:
-        def session = Mock(Session) {
-            getConfig() >> [:]
-        }
-        and:
-        def executor = new MxqExecutor(session: session)
+        setup:
+        // SLURM executor
+        def executor = createExecutor()
+
         // mock process
         def proc = Mock(TaskProcessor)
+
         // task object
         def task = new TaskRun()
         task.processor = proc
         task.workDir = Paths.get('/work/path')
         task.name = 'my task'
+        task.config = new TaskConfig()
 
         when:
         task.config = new TaskConfig()
@@ -66,17 +77,16 @@ class MxqExecutorTest extends Specification {
         task.config.disk = '2 G'
         task.config.memory = '50 M'
         task.config.cpus = '1'
+
         then:
-        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir=/work/path', '--group-name=nf_mxq_executor', '--stdout=/work/path/.command.out', '--stderr=/work/path/.command.err', '--processors=1', '--runtime=01m', '--tmpdir=2048M', '--memory=50M', '/bin/bash', 'job.sh']
+        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir=/work/path', '--group-name=nf_mxq_executor', '--stdout=/work/path/.command.out', '--stderr=/work/path/.command.err', '--processors=1', '--command-alias="nf-my_task"', '--runtime=01m', '--tmpdir=2048M', '--memory=50M', '/bin/bash', 'job.sh']
     }
 
     def testWorkDirWithBlanks() {
-        given:
-        def session = Mock(Session) {
-            getConfig() >> [:]
-        }
-        and:
-        def executor = new MxqExecutor(session: session)
+        setup:
+        // SLURM executor
+        def executor = createExecutor()
+
         def proc = Mock(TaskProcessor)
         def task = new TaskRun()
         task.processor = proc
@@ -90,7 +100,7 @@ class MxqExecutorTest extends Specification {
         task.config.memory = '50 M'
         task.config.cpus = '1'
         then:
-        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir="/home/sreeniva/test\\ work/path"', '--group-name=nf_mxq_executor', '--stdout="/home/sreeniva/test\\ work/path/.command.out"', '--stderr="/home/sreeniva/test\\ work/path/.command.err"', '--processors=1', '--runtime=01m', '--tmpdir=2048M', '--memory=50M', '/bin/bash', 'job.sh']
+        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir="/home/sreeniva/test\\ work/path"', '--group-name=nf_mxq_executor', '--stdout="/home/sreeniva/test\\ work/path/.command.out"', '--stderr="/home/sreeniva/test\\ work/path/.command.err"', '--processors=1', '--command-alias="nf-my_task"', '--runtime=01m', '--tmpdir=2048M', '--memory=50M', '/bin/bash', 'job.sh']
     }
 
     def testQstatCommand() {

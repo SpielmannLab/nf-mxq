@@ -73,6 +73,7 @@ class MxqExecutor extends AbstractGridExecutor {
         result << '--stdout=' + quote(task.workDir.resolve(TaskRun.CMD_OUTFILE))  // .command.out
         result << '--stderr=' + quote(task.workDir.resolve(TaskRun.CMD_ERRFILE))  // .command.err
         result << '--processors=' + task.config.getCpus().toString()
+        result << '--command-alias="' + getJobNameFor(task) + '"'
 
         // Time limit in minutes when no units provided
         if (task.config.getTime()) {
@@ -128,16 +129,16 @@ class MxqExecutor extends AbstractGridExecutor {
         List<String> result = []
 
         // Now write an SQL command to get the table
-        final List<String> sql_prefix = [ "mysql", 
+        final List<String> sql_prefix = [ 'mysql',
             "--defaults-file=${MXQ_SQL_CONF_PATH}".toString(),
-            "--skip-column-names",
-            "--batch",
-            "-e"]
+            '--skip-column-names',
+            '--batch',
+            '-e']
 
         // construct the SQL query
         final user = System.getProperty('user.name')
-        List<String> sql_query = ["SELECT job_id, job_status",
-            "FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID",
+        List<String> sql_query = ['SELECT job_id, job_status',
+            'FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID',
             "WHERE group_name = \'${GROUP_NAME}\'".toString(),
             "AND DATEDIFF(NOW(), date_submit) <= ${MSQ_SQL_DAY_LIMIT}".toString()] // restrict to 2 days, as jobs in Mariux can only run for 24 hours anyway
         if (user) {
