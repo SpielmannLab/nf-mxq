@@ -1,33 +1,42 @@
 # nf-mxq plugin
 
+## Getting a copy
+
+First download this repo with `git clone`.
+
 ## Building
 
 To build the plugin:
+
 ```bash
+cd nf-mxq
 make assemble
 ```
 
-## Testing with Nextflow
+## Testing before installing
 
-The plugin can be tested without a local Nextflow installation:
+The plugin can be tested as follows. This should not require a nextflow installation.
+
+```bash
+# Wait for completion. This should work in one of the public servers
+make test
+# This will install the plugin at ~/.nextflow/plugins making it usable for pipelines
+make install
+```
+
+## Testing by running a real workflow with Nextflow in one of the Public Severs (eg. godxxxxqueen)
 
 1. Build and install the plugin to your local Nextflow installation: `make install`
-2. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@0.1.0`
+2. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@1.0.0 -process.executor mxq`
+3. Monitor your job status either using:
 
-## Publishing
+   ```mysql --defaults-file=/etc/mxq/mysql_ro.cnf
+   SELECT job_id, job_status
+   FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID
+   WHERE group_name = 'nf_mxq_executor' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = 'sreeniva'
+   ORDER BY date_submit DESC LIMIT 6
+   ```
 
-Plugins can be published to a central plugin registry to make them accessible to the Nextflow community. 
+   or
 
-
-Follow these steps to publish the plugin to the Nextflow Plugin Registry:
-
-1. Create a file named `$HOME/.gradle/gradle.properties`, where $HOME is your home directory. Add the following properties:
-
-    * `npr.apiKey`: Your Nextflow Plugin Registry access token.
-
-2. Use the following command to package and create a release for your plugin on GitHub: `make release`.
-
-
-> [!NOTE]
-> The Nextflow Plugin registry is currently available as preview technology. Contact info@nextflow.io to learn how to get access to it.
-> 
+   Using the web interface

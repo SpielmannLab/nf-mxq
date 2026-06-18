@@ -6,3 +6,7 @@
 # Ignore Gradle build output directory
 build
 work
+
+# Ignore git files
+.gitignore
+README_for_publishing.md
