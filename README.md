@@ -30,8 +30,8 @@ make install
 2. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@1.0.0 -process.executor mxq`
 3. Monitor your job status either using `mysql --defaults-file=/etc/mxq/mysql_ro.cnf`:
 
-   ```
-   SELECT job_id, job_status
+   ```SQL
+   SELECT job_id, job_command, date_submit, job_status, job_memory, job_time, job_tmpdir_size, mxq_job.group_id
    FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID
    WHERE group_name = 'nf_mxq_executor' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = '<username>'
    ORDER BY date_submit DESC LIMIT 6
@@ -50,7 +50,21 @@ make install
 - process.time passed onto --runtime= (unit conversion to minutes done automatically)
 - process.disk passed onto --tmpdir= (unit conversion to MB done automatically)
 
-
 Here are the ones not yet supported:
+
 - clusterOptions #TODO
 
+For example, this all of the values in this entry in nextflow.config are respected:
+
+```groovy
+process {
+    executor = 'mxq'
+    // scratch = '$MXQ_JOB_TMPDIR'
+    scratch = true // Nextflow uses $TMPDIR (=$MXQ_JOB_TMPDIR) for scratch by default if true
+    errorStrategy = 'terminate' | 'finish'
+    cpus = 1
+    memory = 128.MB
+    time = 5.min
+    disk = 100.MB // This is important. This is the space in the SCRATCH. Else the default in mxq is 10GB.
+}
+```
