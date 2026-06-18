@@ -28,12 +28,12 @@ make install
 
 1. Build and install the plugin to your local Nextflow installation: `make install`
 2. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@1.0.0 -process.executor mxq`
-3. Monitor your job status either using:
+3. Monitor your job status either using `mysql --defaults-file=/etc/mxq/mysql_ro.cnf`:
 
-   ```mysql --defaults-file=/etc/mxq/mysql_ro.cnf
+   ```
    SELECT job_id, job_status
    FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID
-   WHERE group_name = 'nf_mxq_executor' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = 'sreeniva'
+   WHERE group_name = 'nf_mxq_executor' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = '<username>'
    ORDER BY date_submit DESC LIMIT 6
    ```
 
