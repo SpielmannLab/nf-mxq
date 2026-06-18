@@ -63,10 +63,11 @@ class MxqExecutorTest extends Specification {
         when:
         task.config = new TaskConfig()
         task.config.time = '1m'
+        task.config.disk = '2 G'
         task.config.memory = '50 M'
         task.config.cpus = '1'
         then:
-        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir=/work/path', '--group-name=nf_mxq_executor', '--stdout=/work/path/.command.log', '--processors=1', '--runtime=01m', '--memory=50M', '/bin/bash', 'job.sh']
+        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir=/work/path', '--group-name=nf_mxq_executor', '--stdout=/work/path/.command.out', '--stderr=/work/path/.command.err', '--processors=1', '--runtime=01m', '--tmpdir=2048M', '--memory=50M', '/bin/bash', 'job.sh']
     }
 
     def testWorkDirWithBlanks() {
@@ -85,10 +86,11 @@ class MxqExecutorTest extends Specification {
         when:
         task.config = new TaskConfig()
         task.config.time = '1m'
+        task.config.disk = '2 G'
         task.config.memory = '50 M'
         task.config.cpus = '1'
         then:
-        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir="/home/sreeniva/test\\ work/path"', '--group-name=nf_mxq_executor', '--stdout="/home/sreeniva/test\\ work/path/.command.log"', '--processors=1', '--runtime=01m', '--memory=50M', '/bin/bash', 'job.sh']
+        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir="/home/sreeniva/test\\ work/path"', '--group-name=nf_mxq_executor', '--stdout="/home/sreeniva/test\\ work/path/.command.out"', '--stderr="/home/sreeniva/test\\ work/path/.command.err"', '--processors=1', '--runtime=01m', '--tmpdir=2048M', '--memory=50M', '/bin/bash', 'job.sh']
     }
 
     def testQstatCommand() {
@@ -96,7 +98,7 @@ class MxqExecutorTest extends Specification {
         def executor = [:] as MxqExecutor
         def text =
             '''
-            58130027    0 
+            58130027    0
             58130028    100
             58130029    150
             58130030    200
@@ -130,8 +132,8 @@ class MxqExecutorTest extends Specification {
         then:
         usr
 
-        executor.queueStatusCommand(null) == [ "mysql", "--defaults-file=/etc/mxq/mysql_ro.cnf", "--skip-column-names", "--batch" , "-e", "SELECT job_id, job_status FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID WHERE group_name = \'nf_mxq_executor\' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = \'${usr}\'".toString()]
-        executor.queueStatusCommand('xxx') == [ "mysql", "--defaults-file=/etc/mxq/mysql_ro.cnf", "--skip-column-names", "--batch" , "-e", "SELECT job_id, job_status FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID WHERE group_name = \'nf_mxq_executor\' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = \'${usr}\'".toString()]
+        executor.queueStatusCommand(null) == [ 'mysql', '--defaults-file=/etc/mxq/mysql_ro.cnf', '--skip-column-names', '--batch' , '-e', "SELECT job_id, job_status FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID WHERE group_name = \'nf_mxq_executor\' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = \'${usr}\'".toString()]
+        executor.queueStatusCommand('xxx') == [ 'mysql', '--defaults-file=/etc/mxq/mysql_ro.cnf', '--skip-column-names', '--batch' , '-e', "SELECT job_id, job_status FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID WHERE group_name = \'nf_mxq_executor\' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = \'${usr}\'".toString()]
     }
 
 }

@@ -40,3 +40,17 @@ make install
    or
 
    Using the web interface
+
+## Supported task/processor directives that are executor-specific (i.e., the ones that are passed onto mxqsub)
+
+- process.cpus passed onto --processors=
+- process.memory passed onto --memory= (unit conversion to MB done automatically)
+- task.workDir (the automatically generated one by nextflow) passed onto --workdir=
+- the task specific .command.out and .command.err paths are passed onto the --stdout= and --stderr=, respectively
+- process.time passed onto --runtime= (unit conversion to minutes done automatically)
+- process.disk passed onto --tmpdir= (unit conversion to MB done automatically)
+
+
+Here are the ones not yet supported:
+- clusterOptions #TODO
+

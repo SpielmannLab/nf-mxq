@@ -70,9 +70,8 @@ class MxqExecutor extends AbstractGridExecutor {
         List<String> result = ['mxqsub']
         result << '--workdir=' + quote(task.workDir)
         result << '--group-name=' + GROUP_NAME
-
-        result << '--stdout=' + quote(task.workDir.resolve(TaskRun.CMD_LOG))  // OUTFILE
-
+        result << '--stdout=' + quote(task.workDir.resolve(TaskRun.CMD_OUTFILE))  // .command.out
+        result << '--stderr=' + quote(task.workDir.resolve(TaskRun.CMD_ERRFILE))  // .command.err
         result << '--processors=' + task.config.getCpus().toString()
 
         // Time limit in minutes when no units provided
@@ -81,11 +80,17 @@ class MxqExecutor extends AbstractGridExecutor {
         }
 
         // Set memory limits
+        if (task.config.getDisk()) {
+            result << '--tmpdir=' + task.config.getDisk().toMega() + 'M'
+        }
+
+        // Set memory limits
         if (task.config.getMemory()) {
             result << '--memory=' + task.config.getMemory().toMega() + 'M'
         }
 
         result << '/bin/bash' << scriptFile.getName()
+
         return result
     }
 
