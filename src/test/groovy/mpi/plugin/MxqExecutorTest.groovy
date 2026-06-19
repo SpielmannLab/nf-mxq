@@ -19,14 +19,14 @@ import spock.lang.Specification
  */
 class MxqExecutorTest extends Specification {
 
-    def createExecutor(config) {
+    def createExecutor0(config) {
         Spy(MxqExecutor) {
             getConfig() >> config
         }
     }
 
     def createExecutor() {
-        createExecutor(new ExecutorConfig([:]))
+        createExecutor0(new ExecutorConfig([:]))
     }
 
     def testParseJob() {
