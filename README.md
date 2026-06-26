@@ -26,9 +26,8 @@ make install
 
 ## Testing by running a real workflow with Nextflow in one of the Public Severs (eg. godxxxxqueen)
 
-1. Build and install the plugin to your local Nextflow installation: `make install`
-2. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@1.0.0 -process.executor mxq`
-3. Monitor your job status either using `mysql --defaults-file=/etc/mxq/mysql_ro.cnf`:
+1. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@1.0.0 -process.executor mxq`
+2. Monitor your job status either using `mysql --defaults-file=/etc/mxq/mysql_ro.cnf`:
 
    ```SQL
    SELECT job_id, job_command, date_submit, job_status, job_memory, job_time, job_tmpdir_size, mxq_job.group_id
@@ -53,6 +52,8 @@ make install
 Here are the ones not yet supported:
 
 - clusterOptions #TODO
+- gpu #TODO
+- **dynamic resources:** The mxqsub is not capable of keeping track of processes consuming more than requested memory. Therefore, error codes cannot indicate the failure due to OUT_OF_MEMORY, like the way SLURM can do. Therefore, we cannot do a dynamic errorStrategy directive where nextflow increases the memory for every retry of a task.
 
 For example, this all of the values in this entry in nextflow.config are respected:
 
