@@ -26,7 +26,7 @@ make install
 
 ## Testing by running a real workflow with Nextflow in one of the Public Severs (eg. godxxxxqueen)
 
-1. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@1.0.0 -process.executor mxq`
+1. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@1.0.1 -process.executor mxq`
 2. Monitor your job status either using `mysql --defaults-file=/etc/mxq/mysql_ro.cnf`:
 
    ```SQL
