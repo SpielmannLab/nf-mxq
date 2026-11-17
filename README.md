@@ -26,7 +26,13 @@ make install
 
 ## Testing by running a real workflow with Nextflow in one of the Public Severs (eg. godxxxxqueen)
 
-1. Run a pipeline with the plugin: `nextflow run hello -plugins nf-mxq@1.0.1 -process.executor mxq`
+1. Run a couple of test pipelines with the plugin:
+
+   ```bash
+   nextflow run hello -plugins nf-mxq@1.0.2 -process.executor mxq
+   nextflow run tests/test-gpu.nf -plugins nf-mxq@1.0.2
+   ```
+
 2. Monitor your job status either using `mysql --defaults-file=/etc/mxq/mysql_ro.cnf`:
 
    ```SQL
@@ -48,11 +54,11 @@ make install
 - the task specific .command.out and .command.err paths are passed onto the --stdout= and --stderr=, respectively
 - process.time passed onto --runtime= (unit conversion to minutes done automatically)
 - process.disk passed onto --tmpdir= (unit conversion to MB done automatically)
+- process.accelerator (==1) passed onto --gpu (as only 1 gpu per job is allowed)
+- process.clusterOptions string passed onto the job submission command (e.g., --blacklist=godsavethequeen will be passed on as such)
 
 Here are the ones not yet supported:
 
-- clusterOptions #TODO
-- gpu #TODO
 - **dynamic resources:** The mxqsub is not capable of keeping track of processes consuming more than requested memory. Therefore, error codes cannot indicate the failure due to OUT_OF_MEMORY, like the way SLURM can do. Therefore, we cannot do a dynamic errorStrategy directive where nextflow increases the memory for every retry of a task.
 
 For example, this all of the values in this entry in nextflow.config are respected:
@@ -67,5 +73,7 @@ process {
     memory = 128.MB
     time = 5.min
     disk = 100.MB // This is important. This is the space in the SCRATCH. Else the default in mxq is 10GB.
+    accelerator = 1 // This is the number of GPUs requested for the job. mxqsub currently limits this to 1. Passed on as --gpu
+    clusterOptions = "--blacklist=godsavethequeen" // This is any clusterOptions that is not explicitly suppported by the nf-mxq executor, which the mxqsub command accepts
 }
 ```
