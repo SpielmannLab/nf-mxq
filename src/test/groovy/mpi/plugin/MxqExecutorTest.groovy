@@ -86,9 +86,9 @@ class MxqExecutorTest extends Specification {
         setup:
         // SLURM executor
         def executor = createExecutor()
-
         def proc = Mock(TaskProcessor)
         def task = new TaskRun()
+
         task.processor = proc
         task.workDir = Paths.get('/home/sreeniva/test work/path')
         task.name = 'my task'
@@ -146,5 +146,47 @@ class MxqExecutorTest extends Specification {
         executor.queueStatusCommand('xxx') == [ 'mysql', '--defaults-file=/etc/mxq/mysql_ro.cnf', '--skip-column-names', '--batch' , '-e', "SELECT job_id, job_status FROM mxq_job INNER JOIN mxq_group ON mxq_job.group_id = mxq_group.group_ID WHERE group_name = \'nf_mxq_executor\' AND DATEDIFF(NOW(), date_submit) <= 2 AND user_name = \'${usr}\'".toString()]
     }
 
-}
+    def testGetCommandLineWithAccelerator() {
+        setup:
+        def executor = createExecutor()
+        def proc = Mock(TaskProcessor)
+        def task = new TaskRun()
 
+        task.processor = proc
+        task.workDir = Paths.get('/work/path')
+        task.name = 'my task'
+        task.config = new TaskConfig()
+
+        when:
+        task.config.time = '1m'
+        task.config.disk = '2 G'
+        task.config.memory = '50 M'
+        task.config.cpus = '1'
+        task.config.accelerator = 1
+
+        then:
+        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == [ 'mxqsub', '--workdir=/work/path', '--group-name=nf_mxq_executor', '--stdout=/work/path/.command.out', '--stderr=/work/path/.command.err', '--processors=1', '--command-alias="nf-my_task"', '--gpu', '--runtime=01m', '--tmpdir=2048M', '--memory=50M', '/bin/bash', 'job.sh']
+    }
+
+    def testGetCommandLineWithClusterOptions() {
+        setup:
+        def executor = createExecutor()
+        def proc = Mock(TaskProcessor)
+        def task = new TaskRun()
+
+        task.processor = proc
+        task.workDir = Paths.get('/work/path')
+        task.name = 'my task'
+
+        task.config = new TaskConfig()
+        task.config.time = '1m'
+        task.config.disk = '2 G'
+        task.config.memory = '50 M'
+        task.config.cpus = '1'
+        task.config.clusterOptions = '--gpu --foo --bar=value'
+
+        expect:
+        executor.getSubmitCommandLine(task, Paths.get('/some/path/job.sh')) == ['mxqsub', '--workdir=/work/path', '--group-name=nf_mxq_executor', '--stdout=/work/path/.command.out', '--stderr=/work/path/.command.err', '--processors=1', '--command-alias="nf-my_task"', '--gpu', '--foo', '--bar=value', '--runtime=01m', '--tmpdir=2048M', '--memory=50M', '/bin/bash', 'job.sh']
+    }
+
+}
