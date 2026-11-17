@@ -31,7 +31,7 @@ import nextflow.processor.TaskRun
  *
  * @author Paolo Di Tommaso <paolo.ditommaso@gmail.com>
  * @author Vanessa Sochat <sochat1@llnl.gov>
- * @author Varun Sreenivasan <varun.sreenivasan@molgen.mpg.de> (Edited from Flux Executor with help from Thomas Kreitler and Donald Buczek)
+ * @author Varun Sreenivasan <varun.sreenivasan@molgen.mpg.de> (Edited from Flux Executor with contributions from Thomas Kreitler, Donald Buczek, and Saranya Balachandran)
  */
 @Slf4j
 @CompileStatic
