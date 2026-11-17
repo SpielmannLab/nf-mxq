@@ -75,6 +75,16 @@ class MxqExecutor extends AbstractGridExecutor {
         result << '--processors=' + task.config.getCpus().toString()
         result << '--command-alias="' + getJobNameFor(task) + '"'
 
+        // Request a GPU if the process declares an accelerator
+        if (task.config.getAccelerator()) {
+            result << '--gpu'
+        }
+
+        // Add any remaining user-specified cluster options as raw passthrough
+        if (task.config.getClusterOptions()) {
+            result.addAll(task.config.getClusterOptions().toString().tokenize())
+        }
+
         // Time limit in minutes when no units provided
         if (task.config.getTime()) {
             result << '--runtime=' + task.config.getTime().format('mm') + 'm' // Time in minutes
